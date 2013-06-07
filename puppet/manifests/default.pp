@@ -21,42 +21,6 @@ class { 'apt_get_update':
   stage => preinstall
 }
 
-
-# --- PostgreSQL ---------------------------------------------------------------
-
-class install_postgres {
-  class { 'postgresql': }
-
-  class { 'postgresql::server': }
-
-  pg_database { $ar_databases:
-    ensure   => present,
-    encoding => 'UTF8',
-    require  => Class['postgresql::server']
-  }
-
-  pg_user { 'java':
-    ensure  => present,
-    require => Class['postgresql::server']
-  }
-
-  pg_user { 'vagrant':
-    ensure    => present,
-    superuser => true,
-    require   => Class['postgresql::server']
-  }
-
-  package { 'libpq-dev':
-    ensure => installed
-  }
-
-  package { 'postgresql-contrib':
-    ensure  => installed,
-    require => Class['postgresql::server'],
-  }
-}
-class { 'install_postgres': }
-
 # --- Packages -----------------------------------------------------------------
 
 #package { 'curl':
@@ -81,7 +45,10 @@ package { ['libxml2', 'libxml2-dev', 'libxslt1-dev']:
 
 class java {
   include apt
+
   apt::ppa { "ppa:webupd8team/java": }
+
+  apt::ppa { "ppa:natecarlson/maven3": }
 
   exec { 'apt-get update':
     command => '/usr/bin/apt-get update',
@@ -90,7 +57,7 @@ class java {
 
   exec { 'apt-get update 2':
     command => '/usr/bin/apt-get update',
-    require => [ Apt::Ppa["ppa:webupd8team/java"], Package["git-core"] ],
+    require => [ Apt::Ppa["ppa:natecarlson/maven3"], Apt::Ppa["ppa:webupd8team/java"], Package["git-core"] ],
   }
 
   package { ["vim",
@@ -106,6 +73,12 @@ class java {
     ensure => present,
     require => Exec["apt-get update 2"],
   }
+
+  package { ["maven3"]:
+    ensure => present,
+    require => Package["oracle-java7-installer"],
+  }
+
 
   exec {
     "accept_license":
