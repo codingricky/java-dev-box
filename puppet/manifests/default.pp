@@ -23,9 +23,6 @@ class { 'apt_get_update':
 
 # --- Packages -----------------------------------------------------------------
 
-#package { 'curl':
-#  ensure => installed
-#}
 
 package { 'build-essential':
   ensure => installed
